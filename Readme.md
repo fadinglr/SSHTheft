@@ -13,4 +13,8 @@ Usage:
 ./rerun.sh
 ssh password authentication
 cat /tmp/sshpass  
-``` 
+```
+
+Showcase:
+
+![show](./assets/Peek.gif)
