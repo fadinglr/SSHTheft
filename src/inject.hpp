@@ -69,67 +69,6 @@ void load_so(pid_t pid, void * dlopen, const char * soPath)
 	return;
 }/*}}}*/
 
-void load_sodbg(pid_t pid, void * dlopen, const char * soPath)
-{/*{{{*/
-	regs reg_orig, reg;
-	fpregs fpreg_orig, fpreg;
-	char * buffer;
-	int length  = strlen(soPath);
-	int stacksize = length+0x10;
-	uint64_t ret = 0xdeadbeefcafebabe;
-	int status;
-#ifdef DEBUG
-	ofstream f("/tmp/log");
-#endif
-	char *namebuf = new char[length+1];
-	memcpy(namebuf, soPath, length);
-
-
-	//ptrace_attach(pid, 1);
-	//ptrace(PTRACE_SEIZE, pid, 0, 0);
-	
-
-	buffer = (char *)malloc(stacksize);
-	ptrace(PTRACE_SEIZE, pid, 0, 0);
-	ptrace(PTRACE_INTERRUPT,pid,0,0);
-	waitpid(pid, &status, 0);
-	ptrace_getregs(pid, &reg_orig, &fpreg_orig);
-	ptrace(PTRACE_CONT,pid,0,0);
-
-	memcpy(&reg, &reg_orig, sizeof(reg));
-
-	reg.rdi= reg.rsp+sizeof(ret);
-	reg.rsi= RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE;
-	reg.rip= (uint64_t)dlopen+2;
-	//save stack
-	ptrace(PTRACE_SEIZE, pid, 0, 0);
-	ptrace(PTRACE_INTERRUPT,pid,0,0);
-	waitpid(pid, &status, 0);
-	procread(pid, buffer, (void *)reg.rsp, stacksize);
-	// write ret, name
-	procwrite(pid, &ret, (void* )reg.rsp, sizeof(ret));
-	procwrite(pid, namebuf, (void*)(reg.rsp+ sizeof(ret)),length+1 );
-	ptrace_setregs(pid, &reg, 0);
-
-	ptrace(PTRACE_CONT,pid,0,0);
-
-	
-	waitpid(pid, &status, 0);
-	//ptrace_getregs(pid, &reg, 0);
-
-	//std::cout << "dlopen addr:"<<std::hex<<dlopen;
-	//f<< "loading : " <<namebuf <<std::endl;
-	//f << "dlopen addr:"<<std::hex<<dlopen;
-	//std::cout << " finish addr:"<< std::hex<< reg.rip<< std::endl;
-	//f<< " finish addr:"<< std::hex<< reg.rip<< std::endl;
-	
-
-	procwrite(pid, buffer, (void *)reg_orig.rsp, stacksize);
-	ptrace_setregs(pid, &reg_orig, &fpreg_orig);
-	ptrace(PTRACE_CONT,pid,0,0);
-	free(buffer);
-	return;
-}/*}}}*/
 #include <sys/mman.h>
 void change_protect(pid_t pid, void * mprotect, void * addr, int length)
 {/*{{{*/
@@ -236,15 +175,6 @@ void breakpoint(pid_t pid , void * ptr)
 
 
 
-	//char buff[0x10000];
-	//char path[0x30];
-	//sprintf(path,"/proc/%d/maps", pid);
-	//FILE * fp =fopen(path, "r");
-	//fread(buff, 0x10000,1 ,fp);
-	//fclose(fp);
-	//fs << buff <<std::endl;
-	//
-	//
 	
 	ptrace(PTRACE_CONT, pid, 0, 0);
       	ptrace(PTRACE_DETACH, pid, 0, 0);

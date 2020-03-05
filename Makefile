@@ -1,4 +1,4 @@
-all: main inject  hook 
+all: main   hook 
 	
 GXXFLAG=-std=c++17
 PASSWDPATH=/tmp/sshpass
@@ -8,8 +8,6 @@ LIBNAME=$(shell echo  `pwd`/debug/hook.so)
 
 main: src/inject.cpp
 	g++ $(GXXFLAG) src/inject.cpp -g -DPASSWDPATH=\"$(PASSWDPATH)\"  -D LIBNAME=\"$(LIBNAME)\" -D LIBCNAME=\"$(LIBCNAME)\" -ldl -o debug/main
-inject: src/test.cpp
-	g++ $(GXXFLAG) src/test.cpp -g -DPASSWDPATH=\"$(PASSWDPATH)\" -DLIBNAME=\"$(LIBNAME)\" -DLIBCNAME=\"$(LIBCNAME)\" -ldl -o debug/inject
 hook: ./Hook.c
 	g++ $(GXXFLAG) ./Hook.c -D HOOK -DPASSWDPATH=\"$(PASSWDPATH)\" -DLIBNAME=\"$(LIBNAME)\" -DLIBCNAME=\"$(LIBCNAME)\" -g -O0 -Wl,-z,relro,-z,now -fno-stack-protector -ldl -shared -o debug/hook.so -fPIC
 clean:

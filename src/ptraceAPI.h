@@ -202,24 +202,5 @@ int procwrite(pid_t pid, const void * buffer, const void * addr,int size)
 	return n;
 }/*}}}*/
 
-#ifdef ISCPP
-#include "hexdump.h"
-#include <iostream>
-int main(int argc, char * argv[])
-{/*{{{*/
-	regs ureg;
-	pid_t pid = atoi(argv[1]);
-	std::cout <<std::hex<<	getLoadAddr(1951242) <<std::endl;
-	ptrace_attach(pid, 1);
-	const char * data = "XXPORNHUB";
-	unsigned char buf[0x40];
-	memset(buf, 0 ,0x40);
-	std::cout <<procwrite(pid, data, (void *)getLoadAddr(pid), sizeof(data))<<std::endl;
-	procread(pid, buf, (void *)getLoadAddr(pid), 0x40);
-	hexdump(buf, 0x40);
-	procwrite(pid, buf, (void *)getLoadAddr(pid), 0x40);
-	ptrace_attach(pid, 0);
 
-}/*}}}*/
-#endif
 #endif

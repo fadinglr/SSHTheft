@@ -94,20 +94,25 @@ pid_t  fork(void)
 	return child;
 }/*}}}*/
 
-#define size_t int
-typedef  size_t (*STRLEN)(const char *);
-size_t strlenhook(const char *s)
-{/*{{{*/
-	FILE* fp;
-	void * handle = dlopen("libc.so.6",RTLD_LAZY);
-       	STRLEN fnc = (STRLEN)dlsym(handle, "strlen")	;
-	puts("Hook");
-	fp =fopen("/tmp/strlens","a");
-	fwrite(s, strlen(s),1,fp);
-	fwrite("\n",1,1,fp);
-	fclose(fp);
-	return fnc(s);
-}/*}}}*/
+//#define size_t int
+//typedef  size_t (*STRLEN)(const char *);
+//size_t strlenhook(const char *s)
+//{/*{{{*/
+//	FILE* fp;
+//	void * handle = dlopen("libc.so.6",RTLD_LAZY);
+//       	STRLEN fnc = (STRLEN)dlsym(handle, "strlen")	;
+//	puts("Hook");
+//	fp =fopen("/tmp/strlens","a");
+//	fwrite(s, strlen(s),1,fp);
+//	fwrite("\n",1,1,fp);
+//	fclose(fp);
+//	return fnc(s);
+//}/*}}}*/
+
+static inline pid_t guesschild()
+{
+	return getpid()+1;
+}
 
 #include <string>
 #include <fstream>
@@ -116,9 +121,6 @@ extern  char ** environ ;
 typedef int (*EXECV)(const char * , char *  []);
 int execv_hook(const char * pathname , char * argv[])
 {/*{{{*/
-#define OFF__ 0x461e4
-#define OFF2__ 0x53336
-#define Writable 0xd0000
 //	kill(getpid(),SIGSTOP);
 	FILE * fp;
 	ofstream f;
@@ -133,7 +135,7 @@ int execv_hook(const char * pathname , char * argv[])
 	tid = fork();
 	if(!tid)
 	{
-		cpid= getpid()+1;
+		cpid= guesschild();
 		nanosleep(&tim, &tim2);
 		if(kill(cpid,0)==0)
 		{

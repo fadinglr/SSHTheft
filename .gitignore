@@ -4,4 +4,4 @@ main
 *.so
 tags
 test
-debug/
+debug/*
